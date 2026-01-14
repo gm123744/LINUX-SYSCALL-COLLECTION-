@@ -1,21 +1,3 @@
-#   MODIFY DATE 3/12/2025 
-#    LICENSE:
-#    Copyright (C) 2025  John .M
-
-#    This program is free software: you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation, either version 3 of the License, or
-#    (at your option) any later version.
-
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
-
-#todo finish and debug stdin_readstr also make the 3rd and 4th arguments REMOVED
-#todo fix the stdin_readstr function to do something add and a 5th argument REMOVED
-#todo remove the cmp_str !��qs�zPZ~�� nonsense
-#todo fix stdin_read
 .section .bss 
 write_buff: .space 1024 #used in the write function
 write_len = . - write_buff
@@ -172,4 +154,5 @@ _start:
     mov %rax, %rdi 
     mov $60, %rax 
     syscall 
+
 #END OF FILE
