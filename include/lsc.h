@@ -1,4 +1,4 @@
-// lsc.h - v0.01 - private domain
+// lsc.h - v0.01 - public domain
 // authored from 2025-2026 by GM_11 || gm123744
 //
 // =======================================================================
@@ -496,4 +496,5 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Lesser General
 Public License instead of this License.
+
 */
