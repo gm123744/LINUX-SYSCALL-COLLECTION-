@@ -7,7 +7,7 @@
 //
 // This library does not have any sefety measures. It is strongly suggested
 // to not make malicius code the whole library is made for education and 
-// system developers with high level syntax while having a lot of control.
+// system developers with low level syntax while having a lot of control.
 //
 // =======================================================================
 //
@@ -155,5 +155,6 @@ typedef struct lsc_write {
     }
 #endif
 #endif // LSC_H
+
 
 
