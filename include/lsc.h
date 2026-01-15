@@ -125,41 +125,61 @@
 #define KEY_PAGEDOWN     0x51
 
 #define WRITE_STDOUT 1
-#define READ_STDIN 1
+#define READ_STDIN   1
 
-typedef struct lsc_write {
-    int wtype;          
-    const char* dataptr;   
-    size_t datalen;         
+typedef struct {
+    int wtype;
+    const char *dataptr;
+    size_t datalen;
 } lsc_write;
-typedef struct lsc_read {
-    int rtype;          
-    char* dataptr;   
-    size_t datalen;         
+
+typedef struct {
+    int rtype;
+    char *dataptr;
+    size_t datalen;
 } lsc_read;
 
-// The macro user calls
-#define stdout(w) _lsc_write_execute(w)
-#define tstdout(w) _lsc_twrite_execute(w)
+/* forward declarations */
+#ifdef X86_64_LINUX
+static inline void lscwriteexecute(lsc_write *w);
+#endif
+
+#ifdef X86_32_LINUX
+static inline void lsctwriteexecute(lsc_write *w);
+#endif
+
+/* user macros */
+#ifdef X86_64_LINUX
+#define lsc_stdout(w)  lscwriteexecute(w)
+#elif defined(X86_32_LINUX)
+#define lsc_stdout(w)  lsctwriteexecute(w)
+#endif
+
+/* Same fix for 32-bit if you have tstdout */
+#ifdef X86_32_LINUX
+#define lsc_tstdout(w) lsctwriteexecute(w)
+#elif defined(X86_64_LINUX)
+#define lsc_tstdout(w) lscwriteexecute(w)
+#endif
 
 #ifdef X86_64_LINUX
-    extern void write_stdout(const char* buf, size_t len);
-    extern void stdin_read(char* buf, size_t len);
-    static inline void _lsc_write_execute(lsc_write* w) {
-        if (w->write == WRITE_STDOUT) {
-            write_stdout(w->arg1, w->len); 
-        }
+extern void write_stdout(const char* buf, size_t len);
+extern void stdin_read(char* buf, size_t len);
+static inline void lscwriteexecute(lsc_write* w) {
+    if (w->wtype == WRITE_STDOUT) {
+        write_stdout(w->dataptr, w->datalen);
     }
+}
 
 #elif defined(X86_32_LINUX)
-    // 32-bit assembly function  
-    extern void twrite_stdout(const char* buf, size_t len);
-    
-    static inline void _lsc_twrite_execute(lsc_write* w) {
-        if (w->write == WRITE_STDOUT) {
-            twrite_stdout(w->arg1, w->len);  
-        }
+
+extern void twrite_stdout(const char* buf, size_t len);
+
+static inline void lsctwriteexecute(lsc_write* w) {
+    if (w->wtype == WRITE_STDOUT) {
+        twrite_stdout(w->dataptr, w->datalen);
     }
-#endif
+}
+#endif 
 #endif // LSC_H
-//HISTORY IN PROGRESS
+//history still in progress
