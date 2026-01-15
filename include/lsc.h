@@ -39,7 +39,7 @@
 ////
 #ifndef LSC_H
 #define LSC_H
-#include <stddef.h>
+#include <stddef.h> // temporary for size_t
 //keyboard input
 #define KEY_A 0x1E
 #define KEY_B 0x30
@@ -134,27 +134,25 @@ typedef struct lsc_write {
 
 // The macro user calls
 #define stdout(w) _lsc_write_execute(w)
+#define tstdout(w) _lsc_twrite_execute(w)
 
 #ifdef X86_64_LINUX
-    extern void system_stdout(const char* buf, size_t len);
+    extern void write_stdout(const char* buf, size_t len);
     
     static inline void _lsc_write_execute(lsc_write* w) {
         if (w->write == WRITE_STDOUT) {
-            system_stdout(w->arg1, w->len); 
+            write_stdout(w->arg1, w->len); 
         }
     }
 
 #elif defined(X86_32_LINUX)
     // 32-bit assembly function  
-    extern void system_stdoutwo(const char* buf, size_t len);
+    extern void twrite_stdout(const char* buf, size_t len);
     
-    static inline void _lsc_write_execute(lsc_write* w) {
+    static inline void _lsc_twrite_execute(lsc_write* w) {
         if (w->write == WRITE_STDOUT) {
-            system_stdoutwo(w->arg1, w->len);  
+            twrite_stdout(w->arg1, w->len);  
         }
     }
 #endif
 #endif // LSC_H
-
-
-
