@@ -17,7 +17,8 @@
 //
 // CONTRIBUTORS
 // VERSION HISTORY
-//   (0.01) 14/1/2026 
+//   (0.01) 14/1/2026 First public release
+//   (0.02) 16/1/2026 Printing added (stable) i/o added (unstable)
 //   Full history can be found at the end of this file.
 //
 // LICENSE
@@ -152,19 +153,25 @@ static inline void lsctwriteexecute(lsc_write *w);
 #ifdef X86_64_LINUX
 #define lsc_stdout(w)  lscwriteexecute(w)
 #elif defined(X86_32_LINUX)
-#define lsc_stdout(w)  lsctwriteexecute(w)
+#define lsc_tstdout(w)  lsctwriteexecute(w)
 #endif
 
 /* Same fix for 32-bit if you have tstdout */
 #ifdef X86_32_LINUX
 #define lsc_tstdout(w) lsctwriteexecute(w)
 #elif defined(X86_64_LINUX)
-#define lsc_tstdout(w) lscwriteexecute(w)
+#define lsc_stdout(w) lscwriteexecute(w)
+#define lsc_stdin(r) lscreadexecute(r)
 #endif
 
 #ifdef X86_64_LINUX
 extern void write_stdout(const char* buf, size_t len);
 extern void stdin_read(char* buf, size_t len);
+static inline void lscreadexecute(lsc_read* r) {
+    if (r->rtype == READ_STDIN) {
+        stdin_read(r->dataptr, r->datalen);
+    }
+}
 static inline void lscwriteexecute(lsc_write* w) {
     if (w->wtype == WRITE_STDOUT) {
         write_stdout(w->dataptr, w->datalen);
@@ -182,4 +189,6 @@ static inline void lsctwriteexecute(lsc_write* w) {
 }
 #endif 
 #endif // LSC_H
-//history still in progress
+//   (0.01) 14/1/2026 First public release
+//   (0.02) 16/1/2026 Printing added (stable) i/o added (unstable)
+
