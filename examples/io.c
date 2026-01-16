@@ -11,7 +11,7 @@
  * Key Features:
  *   - Works without libc or standard libraries
  * Usage:
- *   gcc -nostartfiles -nodefaultlibs helloworld.c lsc.s -o hello
+ *  gcc -nostartfiles -nodefaultlibs io.c lsc.s -o io -Wa,--no-warn
  *
  * Output:
  *   Enter something: 
