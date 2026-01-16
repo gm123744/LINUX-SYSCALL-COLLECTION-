@@ -1,7 +1,31 @@
-#define X86_64_LINUX 1
+/*
+ * LSC Hello World Example
+ *
+ * Copyright (C) 2026 gm123744
+ * SPDX-License-Identifier: GPL-2.0-only
+ *
+ * Description:
+ *   This program demonstrates printing "Hello, world" to the terminal
+ *   using LSC (Linux Syscall Collection), a minimal syscall wrapper.
+ *
+ * Key Features:
+ *   - Works without libc or standard libraries
+ *   - Uses direct syscall-based output via lsc_write
+ *
+ * Usage:
+ *   gcc -nostartfiles -nodefaultlibs helloworld.c lsc.s -o hello
+ *
+ * Output:
+ *   Hello, world
+ *
+ * Notes:
+ *   - Both lsc.h and lsc.s must be in the build directory
+ *   - This example uses the struct-based interface
+ *     (see write_stdout for a simpler shortcut)
+ */
+#define X86_64_LINUX 1 // specify backend target
 #include "lsc.h"
-
-int main() {
+int main(void) {
     //write 1st side of hello world
     lsc_write hello; //call write struct 
     hello.wtype = WRITE_STDOUT; //specify stdout type
@@ -12,10 +36,9 @@ int main() {
     //second side of hello world
     lsc_write world;
     world.wtype = WRITE_STDOUT;
-    world.dataptr = "world\n";
-    world.datalen = 6;  
+    world.dataptr = " world\n";
+    world.datalen = 7;  
     lsc_stdout(&world);
-    return 0;
 }
-//compile and link with:
-//gcc -nostartfiles -nodefaultlibs helloworld.c lsc.s -o hello -Wa,--no-warn
+// Optional: bypass struct and use shortcut:
+// write_stdout("Hello, world\n", 13);
