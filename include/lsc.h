@@ -19,11 +19,11 @@
 // VERSION HISTORY
 //   (0.01) 14/1/2026 First public release
 //   (0.02) 16/1/2026 Printing added (stable) i/o added (unstable)
-//   (0.03) 20/1/2026 Complete rework of lsc.h, i/o (stable) COMMING SOON
 //   Full history can be found at the end of this file.
+//   (0.03) 17/1/2026 Complete rework of the i/o (stable) + execve (unstable) new function exit_success (prevents i/o operations from segaulting)
+//   (0.03) 18/1/2026 Execve (Stable) 
 //
-// LICENSE
-//
+//   LICENSE
 //   See license file for information.
 //
 // USAGE
@@ -33,164 +33,101 @@
 //   before the #include of this file. This expands out the actual
 //   implementation into that C/C++ file.
 // NOTES:
-// THIS FILE CURRENTLY DOES NOT EXTERN ANY ASM FUNCTIONS THIS IS JUST A PROTOTYPE
-//
+//   Have fun learning this low level api!
+//   In case you are going to use the struct way to make 
+//   your programms make sure to not compile it with lsc.s
 //
 //////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////
 ////
 #ifndef LSC_H
 #define LSC_H
-#include <stddef.h> // temporary for size_t
-//keyboard input
-#define KEY_A 0x1E
-#define KEY_B 0x30
-#define KEY_C 0x2E
-#define KEY_D 0x20
-#define KEY_E 0x12
-#define KEY_F 0x21
-#define KEY_G 0x22
-#define KEY_H 0x23
-#define KEY_I 0x17
-#define KEY_J 0x24
-#define KEY_K 0x25
-#define KEY_L 0x26 
-#define KEY_M 0x32
-#define KEY_N 0x31
-#define KEY_O 0x18
-#define KEY_P 0x19
-#define KEY_Q 0x10
-#define KEY_R 0x13
-#define KEY_S 0x1F
-#define KEY_T 0x14
-#define KEY_U 0x16
-#define KEY_V 0x2F
-#define KEY_W 0x11
-#define KEY_X 0x2D
-#define KEY_Y 0x15
-#define KEY_Z 0x2C
-#define KEY_1 0x02
-#define KEY_2 0x03
-#define KEY_3 0x04
-#define KEY_4 0x05
-#define KEY_5 0x06
-#define KEY_6 0x07
-#define KEY_7 0x08
-#define KEY_8 0x09
-#define KEY_9 0x0A
-#define KEY_0 0x0B
-#define KEY_ENTER 0x1C
-#define KEY_ESC 0x01
-#define KEY_BACKSPACE 0x0E
-#define KEY_TAB 0x0F
-#define KEY_SPACE 0x39
-#define KEY_MINUS 0x0C
-#define KEY_EQUAL 0x0D
-#define KEY_LEFTBRACE 0x1A
-#define KEY_RIGHTBRACE 0x1B
-#define KEY_BACKSLASH 0x2B
-#define KEY_SEMICOLON 0x27
-#define KEY_APOSTROPHE 0x28
-#define KEY_GRAVE 0x29
-#define KEY_COMMA 0x33
-#define KEY_DOT 0x34
-#define KEY_SLASH 0x35
-#define KEY_CAPSLOCK 0x3A
-#define KEY_F1 0x3B
-#define KEY_F2 0x3C
-#define KEY_F3 0x3D
-#define KEY_F4 0x3E
-#define KEY_F5 0x3F
-#define KEY_F6 0x40
-#define KEY_F7 0x41
-#define KEY_F8 0x42
-#define KEY_F9 0x43
-#define KEY_F10 0x44
-#define KEY_F11 0x57
-#define KEY_F12 0x58
-#define KEY_LEFTSHIFT    0x2A
-#define KEY_RIGHTSHIFT   0x36
-#define KEY_LEFTCTRL     0x1D
-#define KEY_RIGHTCTRL    0xE0
-#define KEY_LEFTALT      0x38
-#define KEY_RIGHTALT     0xE0
-#define KEY_RIGHTMETA    0xE0
-#define KEY_UP           0x48
-#define KEY_DOWN         0x50
-#define KEY_LEFT         0x4B
-#define KEY_RIGHT        0x4D
-#define KEY_INSERT       0x52
-#define KEY_DELETE       0x53
-#define KEY_HOME         0x47
-#define KEY_END          0x4F
-#define KEY_PAGEUP       0x49
-#define KEY_PAGEDOWN     0x51
 
-#define WRITE_STDOUT 1
-#define READ_STDIN   1
-
-typedef struct {
-    int wtype;
-    const char *dataptr;
-    size_t datalen;
+typedef struct lsc_write {
+    int wtype; 
+    const char* dataptr;
+    long datalen;
 } lsc_write;
-
-typedef struct {
+typedef struct lsc_read {
     int rtype;
-    char *dataptr;
-    size_t datalen;
+    char* dataptr;
+    long datalen;
 } lsc_read;
 
-/* forward declarations */
-#ifdef X86_64_LINUX
-static inline void lscwriteexecute(lsc_write *w);
-#endif
+#define WRITE_STDOUT 1
+#define READ_STDIN 1
+#define EXECVE 59
+/* For passing struct by VALUE */
+#define lsc_stdout(str_struct) do { \
+    lsc_write __data = (str_struct); \
+    asm volatile ( \
+        "mov $1, %%rax\n\t" \
+        "mov $1, %%rdi\n\t" \
+        "mov %0, %%rsi\n\t" \
+        "mov %1, %%rdx\n\t" \
+        "syscall\n\t" \
+        : /* no outputs */ \
+        : "r" (__data.dataptr), "r" (__data.datalen) \
+        : "rax", "rdi", "rsi", "rdx", "rcx", "r11", "memory" \
+    ); \
+} while (0)
 
-#ifdef X86_32_LINUX
-static inline void lsctwriteexecute(lsc_write *w);
-#endif
-
-/* user macros */
-#ifdef X86_64_LINUX
-#define lsc_stdout(w)  lscwriteexecute(w)
-#elif defined(X86_32_LINUX)
-#define lsc_tstdout(w)  lsctwriteexecute(w)
-#endif
-
-/* Same fix for 32-bit if you have tstdout */
-#ifdef X86_32_LINUX
-#define lsc_tstdout(w) lsctwriteexecute(w)
-#elif defined(X86_64_LINUX)
-#define lsc_stdout(w) lscwriteexecute(w)
-#define lsc_stdin(r) lscreadexecute(r)
-#endif
-
-#ifdef X86_64_LINUX
-extern void write_stdout(const char* buf, size_t len);
-extern void stdin_read(char* buf, size_t len);
-static inline void lscreadexecute(lsc_read* r) {
-    if (r->rtype == READ_STDIN) {
-        stdin_read(r->dataptr, r->datalen);
-    }
+/* For passing struct by VALUE */
+#define lsc_stdin(read_struct) do { \
+    lsc_read __data = (read_struct); \
+    asm volatile ( \
+        "mov $0, %%rax\n\t" \
+        "mov $0, %%rdi\n\t" \
+        "mov %0, %%rsi\n\t" \
+        "mov %1, %%rdx\n\t" \
+        "syscall\n\t" \
+        : /* no outputs */ \
+        : "r" (__data.dataptr), "r" (__data.datalen) \
+        : "rax", "rdi", "rsi", "rdx", "rcx", "r11", "memory" \
+    ); \
+} while (0)
+static inline void exit_success(int zero) {
+    asm volatile ( // ignore
+        "mov $60, %%rax\n\t"
+        "syscall\n\t"
+        :
+        : "D" ((long)zero)
+        : "rax", "rcx", "r11"
+    );
 }
-static inline void lscwriteexecute(lsc_write* w) {
-    if (w->wtype == WRITE_STDOUT) {
-        write_stdout(w->dataptr, w->datalen);
-    }
-}
+typedef struct lsc_execve {
+    int etype;
+    const char* filename;
+    const char* arg;
+} lsc_execve;
 
-#elif defined(X86_32_LINUX)
-
-extern void twrite_stdout(const char* buf, size_t len);
-
-static inline void lsctwriteexecute(lsc_write* w) {
-    if (w->wtype == WRITE_STDOUT) {
-        twrite_stdout(w->dataptr, w->datalen);
-    }
-}
-#endif 
+#define execve(execstruct) do { \
+    lsc_execve __data = (execstruct); \
+    asm volatile ( \
+        "sub $32, %%rsp\n\t"\
+        "movq $0, 24(%%rsp)\n\t" /*NULL*/\
+        "movq %1, 16(%%rsp)\n\t" /* Argument */\
+        "movq %0, 8(%%rsp)\n\t" /* Program name */\
+        "lea 8(%%rsp), %%rsi\n\t"\
+        "mov %0, %%rdi\n\t" /* filename */\
+        "xor %%rdx, %%rdx\n\t" /* envp = NULL */\
+        "mov $59, %%rax\n\t"\
+        "syscall\n\t" \
+        "add $32, %%rsp\n\t"\
+        : /* no outputs */ \
+        : "r"(__data.filename), "r"(__data.arg) \
+        : "rax", "rdi", "rsi", "rdx", "memory", "cc" \
+    ); \
+} while (0)
+#ifdef X86_64_LINUX
+extern void system(const char* command, const char* path);
+extern void write_stdout(const char* buf, int len);
+extern void stdin_read(char* buf, int len);
+#endif
 #endif // LSC_H
+// VERSION HISTORY
 //   (0.01) 14/1/2026 First public release
 //   (0.02) 16/1/2026 Printing added (stable) i/o added (unstable)
-
-
+//   Full history can be found at the end of this file.
+//   (0.03) 17/1/2026 Complete rework of the i/o (stable) + execve (unstable) new function exit_success (prevents i/o operations from segaulting)
+//   (0.03) 18/1/2026 Execve (Stable) 
