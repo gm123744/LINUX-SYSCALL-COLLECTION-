@@ -7,7 +7,7 @@ LSC is an experimental C/C++ library with an assembly backend that bypasses glib
 - Library still under development
 - **Unstable ABI**
 - Currently implemented: Execve (stable)
-- Documentation Comming soon
+- Execve + I/O documentation coming soon 
 ## supported platforms:
 
 - Linux x86_64
